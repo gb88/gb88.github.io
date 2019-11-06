@@ -262,7 +262,7 @@ function handleData(event) {
 					asked_evt_num = 1;
 					event_cnt += 1;
 					event_num -= 1;
-					waited_data = 23;
+					waited_data = 25;
 			      received_data = 0;
 					buf = new Uint8Array()
 					characteristic_obj.writeValue(buffer);
