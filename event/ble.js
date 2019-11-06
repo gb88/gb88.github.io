@@ -134,10 +134,21 @@ function handleData(event) {
     console.log("get data")
     console.log(event)
     console.log(event_num)
-	 window.alert(event.target.value.byteLength);
+	 //window.alert(event.target.value.byteLength);
 	 if(received_data < waited_data)
 	 {
-		buf = new Uint8Array(event.target.value.buffer,buf);
+		var tmp = new Uint8Array(received_data + event.target.value.byteLength);
+		if(received_data != 0)
+		{
+			tmp.set(buf, 0);
+			tmp.set(new Uint8Array(event.target.value.buffer), received_data);
+		}
+		else
+		{
+			tmp.set(new Uint8Array(event.target.value.buffer), 0);
+		}
+		buf = tmp;
+		//buf = new Uint8Array(event.target.value.buffer,buf);
 		received_data+=event.target.value.byteLength;
 	 }
 	 console.log("Stato")
@@ -325,6 +336,19 @@ function handleData(event) {
 		 }
 	 }
 }
+function concatArrayBuffers(buffer1, buffer2) {
+
+  if (!buffer1) {
+    return buffer2;
+  } else if (!buffer2) {
+    return buffer1;
+  }
+
+  var tmp = new Uint8Array(buffer1.byteLength + buffer2.byteLength);
+  tmp.set(new Uint8Array(buffer1), 0);
+  tmp.set(new Uint8Array(buffer2), buffer1.byteLength);
+  return tmp.buffer;
+};
 
 // disconnect function:
 function disconnect() {
