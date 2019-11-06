@@ -129,7 +129,10 @@ function subscribeToChanges(characteristic) {
     console.log("subscribe")
     characteristic.oncharacteristicvaluechanged = handleData;
 }
-
+function delay(ms) {
+   ms += new Date().getTime();
+   while (new Date() < ms){}
+}
 // handle incoming data:
 function handleData(event) {
     // get the data buffer from the meter:
