@@ -134,6 +134,7 @@ function handleData(event) {
     console.log("get data")
     console.log(event)
     console.log(event_num)
+	 alert(event.target.value.byteLength);
 	 if(received_data < waited_data)
 	 {
 		buf = new Uint8Array(event.target.value.buffer,buf);
