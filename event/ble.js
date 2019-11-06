@@ -134,7 +134,7 @@ function handleData(event) {
     console.log("get data")
     console.log(event)
     console.log(event_num)
-	 //window.alert(event.target.value.byteLength);
+	 window.alert(event.target.value.byteLength);
 	 if(received_data < waited_data)
 	 {
 		var tmp = new Uint8Array(received_data + event.target.value.byteLength);
