@@ -115,6 +115,7 @@ function connect() {
             state = 1;
             console.log(buffer)
             characteristic.writeValue(buffer);
+				delay(10);
         })
         .catch(function(error) {
             // catch any errors:
@@ -171,6 +172,7 @@ function handleData(event) {
 			  buf = new Uint8Array()
 			  state = 2;
 			  characteristic_obj.writeValue(buffer);
+			  delay(10);
 		 } else if (state == 2) {
 			  //risposta conto eventi
 			  /*
@@ -221,6 +223,7 @@ function handleData(event) {
 			  state = 3;
 			  asked_evt = true;
 			  characteristic_obj.writeValue(buffer);
+			  delay(10);
 		 } else if (state == 3) {
 			  if (event_num > 1) {
 					var buffer = new Uint8Array(7);
@@ -240,6 +243,7 @@ function handleData(event) {
 			      received_data = 0;
 					buf = new Uint8Array()
 					characteristic_obj.writeValue(buffer);
+					delay(10);
 			  } else if (event_num == 1) {
 					var buffer = new Uint8Array(7);
 					buffer[0] = 0xE2; //chiedo 1 eventi
@@ -258,6 +262,7 @@ function handleData(event) {
 			      received_data = 0;
 					buf = new Uint8Array()
 					characteristic_obj.writeValue(buffer);
+					delay(10);
 			  }
 
 		 } else if (state == 4) {
@@ -327,6 +332,7 @@ function handleData(event) {
 			      received_data = 0;
 					buf = new Uint8Array()
 					characteristic_obj.writeValue(buffer);
+					delay(10);
 			  } else {
 					console.log("Disconnected")
 					//disconnect
