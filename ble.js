@@ -108,7 +108,7 @@ function connect() {
 			  stop = 0;
 			  			var ctx = document.getElementById('canvas').getContext('2d');
 			myChart = new Chart(ctx, config);
-			  timer = setInterval(interval_timer, 2 * 1000);
+			  timer = setInterval(interval_timer, 1 * 1000);
             /*console.log(characteristic)
             var buffer = new Uint8Array(3);
             buffer[0] = 0xA2; //event count cmd
