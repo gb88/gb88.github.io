@@ -114,6 +114,7 @@ function connect() {
 				buf = new Uint8Array()
             state = 1;
             console.log(buffer)
+				delay(10);
             characteristic.writeValue(buffer);
 				delay(10);
         })
