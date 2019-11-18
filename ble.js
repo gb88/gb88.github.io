@@ -76,6 +76,7 @@ function getUrlVars() {
 function connect() {
 		var device_name = getUrlVars()['d']
 		alert(device_name)
+		console.log(device_name)
 		navigator.bluetooth.requestDevice({
             // filters: [myFilters]       // you can't use filters and acceptAllDevices together
 				 filters: [{name: device_name}],
