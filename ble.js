@@ -15,69 +15,75 @@ var total_evt;
 var asked_evt = false;
 var asked_evt_num;
 var progressive;
-var timer;
-var stop;
-var myChart;
 
-var config = {
-	type: 'line',
-	data: {
-		labels: [],
-		datasets: [{
-			label: 'Ig',
-			backgroundColor: "#ff8000",
-			borderColor: "#ff8000",
-			data: [
-
-			],
-			fill: false,
-		}]
-	},
-	options: {
-		responsive: true,
-		title: {
-			display: true,
-			text: 'Ground Current(A)'
-		},
-		tooltips: {
-			mode: 'index',
-			intersect: false,
-		},
-		hover: {
-			mode: 'nearest',
-			intersect: true
-		},
-		scales: {
-			xAxes: [{
-				display: true,
-				scaleLabel: {
-					display: true,
-					labelString: 'Date & Time'
-				}
-			}],
-			yAxes: [{
-				display: true,
-				scaleLabel: {
-					display: true,
-					labelString: 'Value'
-				}
-			}]
-		}
-	}
-};
-
-
-
-			
-		
+var event_list = [
+    "Events Clear",
+    "Gnd Inst Overcurrent",
+    "Gnd Timed1 Overcurrent",
+    "Gnd Timed2 Overcurrent",
+    "Breaker Discrepancy",
+    "Mechanical Operation",
+    "Digital Input 1 Deactive",
+    "Digital Input 1 Active",
+    "Digital Input 2 Deactive",
+    "Digital Input 2 Active",
+    "Digital Input 3 Deactive",
+    "Digital Input 3 Active",
+    "Breaker Status Opened",
+    "Breaker Status Closed",
+    "Remote Reset",
+    "Remote Trip Set",
+    "Trip De-Energized",
+    "Aux1 De-Energized",
+    "Aux2 De-Energized",
+    "Trip Energized",
+    "Aux1 Energized",
+    "Aux2 Energized",
+    "Trip Remote De-Energized",
+    "Aux1 Remote De-Energized",
+    "Aux2 Remote De-Energized",
+    "Trip Remote Energized",
+    "Aux1 Remote Energized",
+    "Aux2 Remote Energized",
+    "Default Setpoint",
+    "Setpoint Stored",
+    "Setpoint Discrepancy",
+    "Password Changed",
+    "Model Changed",
+    "Test BLE",
+    "Trip Data Lost",
+    "Trip Data Restored",
+    "Calibration Time Data Lost",
+    "Calibration Data Lost",
+    "Power Loss",
+    "Aux Power Restored",
+    "Maintenance Data Cleared",
+    "Maintenance Data Lost",
+    "Maintenance Data Restored",
+    "Status Lost",
+    "BLE Failure",
+    "ADC Failure",
+    "Flash Busy",
+    "Out of Service",
+];
+function getUrlVars() {
+    var vars = {};
+    var parts = window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m,key,value) {
+        vars[key] = value;
+    });
+    return vars;
+}
 function connect() {
-    navigator.bluetooth.requestDevice({
+		var device_name = getUrlVars()['d']
+		navigator.bluetooth.requestDevice({
             // filters: [myFilters]       // you can't use filters and acceptAllDevices together
+				 filters: [{name: device_name}],
             optionalServices: [myService],
-            acceptAllDevices: true
+          //  acceptAllDevices: true
         })
         .then(function(device) {
             // save the device returned so you can disconnect later:
+				
             myDevice = device;
             console.log(device);
             // connect to the device once you find it:
@@ -105,41 +111,21 @@ function connect() {
             }
         })
         .then(function(characteristic) {
-			  stop = 0;
-			  			var ctx = document.getElementById('canvas').getContext('2d');
-			myChart = new Chart(ctx, config);
-			  timer = setInterval(interval_timer, 1 * 1000);
-            /*console.log(characteristic)
+            console.log(characteristic)
             var buffer = new Uint8Array(3);
-            buffer[0] = 0xA2; //event count cmd
+            buffer[0] = 0xE1; //event count cmd
             buffer[1] = 0x00;
-            buffer[2] = 0x05; //wait for 3 byte
+            buffer[2] = 0x03; //wait for 3 byte
             state = 1;
             console.log(buffer)
-            characteristic.writeValue(buffer);*/
+            characteristic.writeValue(buffer);
         })
         .catch(function(error) {
             // catch any errors:
             console.error('Connection failed!', error);
         });
 }
-function stop_timer()
-{
-	stop = 1;
-	clearInterval(timer);
-}
-function interval_timer()
-{
-	 console.log("interval_timer");
-	 //Richiesta act
-	 var buffer = new Uint8Array(3);
-	buffer[0] = 0xA2; //event count cmd
-	buffer[1] = 0x00;
-	buffer[2] = 0x05; //wait for 3 byte
-	state = 1;
-	console.log(buffer)
-	characteristic_obj.writeValue(buffer);
-}
+
 // subscribe to changes from the meter:
 function subscribeToChanges(characteristic) {
     console.log("subscribe")
@@ -157,35 +143,162 @@ function handleData(event) {
     if (state == 1) {
         console.log("First Request Answered")
         //TODO: check della risposta
-        var buffer = new Uint8Array(5);
-        buffer[0] = 0xA2; //event count cmd
-		  buffer[1] = 0x00;
-        buffer[2] = 93;
-		  var result = CalcCrc(buffer, 3);
-        buffer[3] = result[0]; //crc da calcolare
-        buffer[4] = result[1]; //crc da calcolare
+        var buffer = new Uint8Array(3);
+        buffer[0] = 0xE1; //event count cmd
+        buffer[1] = 0x08;
+        buffer[2] = 0x7F; //crc da calcolare
         state = 2;
-		  console.log(buffer)
         characteristic_obj.writeValue(buffer);
     } else if (state == 2) {
-		 //decodifica del dato
-		  var date = Unix_timestamp(buf[4] + buf[3] * 256 + buf[2] * 256 * 256 + buf[1] * 256 * 256 * 256, 0).toString();
-		  var current = ((buf[12] + buf[11] * 256 + buf[10] * 256 * 256 + buf[9] * 256 * 256 * 256) / 100).toString();	
-		  console.log(date)
-		  console.log(current)	
-				config.data.labels.push(date);
+        //risposta conto eventi
+        /*
+        1 0xE1
+        2 event num
+        1 max event for requ
+        2 crc
+        */
+        //todo gestire caso eventi nulli
+        var el = document.getElementById("list");
+        el.innerHTML = '';
+        progressive = 0;
+        var node = document.createElement("li");
+        node.setAttribute('class', 'table-header');
+        var prog = document.createElement("div");
+        prog.setAttribute('class', 'col col-1');
+        prog.innerText = "#";
+        node.appendChild(prog);
+        var number = document.createElement("div");
+        number.setAttribute('class', 'col col-2');
+        number.innerText = "Number";
+        node.appendChild(number);
+        var type = document.createElement("div");
+        type.setAttribute('class', 'col col-3');
+        type.innerText = "Type";
+        node.appendChild(type);
+        var date = document.createElement("div");
+        date.setAttribute('class', 'col col-4');
+        date.innerText = "Date";
+        node.appendChild(date);
+        var current = document.createElement("div");
+        current.setAttribute('class', 'col col-5');
+        current.innerText = "Ig";
+        node.appendChild(current);
+        el.appendChild(node);
 
-				config.data.datasets.forEach(function(dataset) {
-					dataset.data.push(current);
-				});
+        event_num = buf[2];
+        event_cnt = 1;
+        total_evt = event_num;
+        //document.getElementById("event_count").innerHTML = buf[2].toString();
+        var buffer = new Uint8Array(3);
+        buffer[0] = 0xE2; //event count cmd
+        buffer[1] = 0x00;
+        buffer[2] = 0x07; //crc da calcolare
+        state = 3;
+        asked_evt = true;
+        characteristic_obj.writeValue(buffer);
+    } else if (state == 3) {
+        if (event_num > 1) {
+            var buffer = new Uint8Array(7);
+            buffer[0] = 0xE2; //chiedo 2 eventi
+            buffer[1] = event_cnt >> 8;
+            buffer[2] = event_cnt;
+            buffer[3] = (event_cnt + 1) >> 8;
+            buffer[4] = event_cnt + 1;
+            var result = CalcCrc(buffer, 5);
+            buffer[5] = result[0]; //crc da calcolare
+            buffer[6] = result[1]; //crc da calcolare
+            state = 4;
+            asked_evt_num = 2;
+            event_cnt += 2;
+            event_num -= 2;
+            characteristic_obj.writeValue(buffer);
+        } else if (event_num == 1) {
+            var buffer = new Uint8Array(7);
+            buffer[0] = 0xE2; //chiedo 1 eventi
+            buffer[1] = event_cnt >> 8;
+            buffer[2] = event_cnt;
+            buffer[3] = (event_cnt) >> 8;
+            buffer[4] = event_cnt;
+            var result = CalcCrc(buffer, 5);
+            buffer[5] = result[0]; //crc da calcolare
+            buffer[6] = result[1]; //crc da calcolare
+            state = 4;
+            asked_evt_num = 1;
+            event_cnt += 1;
+            event_num -= 1;
+            characteristic_obj.writeValue(buffer);
+        }
 
-				myChart.update();
-			
-			if(stop == 1)
-			{
-				stop = 0;
-				disconnect();
-			}
+    } else if (state == 4) {
+        move(Math.round((event_cnt - 1) / total_evt * 100))
+        var step = 0;
+        if (asked_evt == true) {
+            for (i = 0; i < asked_evt_num; i++) {
+                progressive++;
+                console.log("decode_evt")
+                var number = (buf[7 + step] + buf[8 + step] * 256).toString();
+                var type = (buf[9 + step] + buf[10 + step] * 256); //.toString();
+                var date = Unix_timestamp(buf[11 + step] + buf[12 + step] * 256 + buf[13 + step] * 256 * 256 + buf[14 + step] * 256 * 256 * 256, (buf[15 + step] + buf[16 + step] * 256).toString());
+                var current = ((buf[19 + step] + buf[20 + step] * 256 + buf[21 + step] * 256 * 256 + buf[22 + step] * 256 * 256 * 256) / 100).toString();
+                var el = document.getElementById("list");
+                var node = document.createElement("li");
+                node.setAttribute('class', 'table-row');
+
+                var col0 = document.createElement("div");
+                col0.setAttribute('class', 'col col-1');
+                col0.setAttribute('data-label', '#');
+                col0.innerText = progressive;
+                node.appendChild(col0);
+
+                var col1 = document.createElement("div");
+                col1.setAttribute('class', 'col col-2');
+                col1.setAttribute('data-label', 'Number');
+                col1.innerText = number;
+                node.appendChild(col1);
+
+                var col2 = document.createElement("div");
+                col2.setAttribute('class', 'col col-3');
+                col2.setAttribute('data-label', 'Type');
+                col2.innerText = event_list[type - 1];
+                node.appendChild(col2);
+
+                var col3 = document.createElement("div");
+                col3.setAttribute('class', 'col col-4');
+                col3.setAttribute('data-label', 'Date');
+                col3.innerText = date;
+                node.appendChild(col3);
+
+                var col4 = document.createElement("div");
+                col4.setAttribute('class', 'col col-5');
+                col4.setAttribute('data-label', 'Ig');
+                col4.innerText = current;
+                node.appendChild(col4);
+
+
+                el.appendChild(node);
+                step += 16;
+            }
+        }
+        //risposta conto eventi
+        /*
+        1 0xE1
+        2 event num
+        1 max event for requ
+        2 crc
+        */
+        if (event_num != 0) {
+            var buffer = new Uint8Array(3);
+            buffer[0] = 0xE2; //event count cmd
+            buffer[1] = 0x00;
+            buffer[2] = 0x07; //crc da calcolare
+            state = 3;
+            characteristic_obj.writeValue(buffer);
+        } else {
+            console.log("Disconnected")
+            //disconnect
+            asked_evt = false;
+            disconnect();
+        }
     }
 }
 
