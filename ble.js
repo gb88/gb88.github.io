@@ -134,6 +134,7 @@ function subscribeToChanges(characteristic) {
     characteristic.oncharacteristicvaluechanged = handleData;
 }
 
+
 // handle incoming data:
 function handleData(event) {
     // get the data buffer from the meter:
